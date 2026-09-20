@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Analytics</title>
+
+  <!-- FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- CHART.JS -->
+  <script src="vendor/chart.umd.js"></script>
+  <!-- PAPAPARSE -->
+  <script src="vendor/papaparse.min.js"></script>
+  <!-- PDF.JS (lee el reporte "Print Version" en PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <link rel="stylesheet" href="styles.css?v=13">
+</head>
+<body>
+
+<!-- INITIAL UPLOAD MODAL -->
+<div id="upload-modal" class="modal-overlay">
+  <div class="modal-card">
+    <h2>Upload team files</h2>
+    <p>
+      Insert the <strong>Roster</strong> to load names, numbers, years, and positions,
+      and the <strong>Coach's View</strong> to load the dashboard statistics.
+    </p>
+    <div class="upload-actions">
+      <label for="rosterInputModal" class="upload-btn secondary-upload">Insert Roster</label>
+      <input id="rosterInputModal" type="file" accept=".pdf,.csv,application/pdf,text/csv" hidden>
+      <label for="csvInputModal" class="upload-btn">Insert Coach's View</label>
+      <input id="csvInputModal" type="file" accept=".csv,.pdf,text/csv,application/pdf" hidden>
+    </div>
+    <div id="modal-error" class="modal-error"></div>
+  </div>
+</div>
+
+<!-- EXPANDED CHART MODAL (se abre al hacer click en un chart con top 5) -->
+<div id="chart-modal" class="modal-overlay hidden">
+  <div class="modal-card modal-card-chart">
+    <button id="chart-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+    <h2 id="chart-modal-title">—</h2>
+    <p id="chart-modal-sub" class="sub"></p>
+    <div id="chart-modal-body" class="modal-chart-body">
+      <div class="chart-wrap" id="chart-modal-wrap">
+        <canvas id="chartModalCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER PROFILE MODAL (se abre al hacer click en una jugadora del roster) -->
+<div id="player-modal" class="modal-overlay hidden">
+  <div class="modal-card modal-card-player">
+    <button id="player-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+    <div id="player-modal-body"></div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <h1>Team — Soccer</h1>
+      <p>Season analytics</p>
+    </div>
+
+    <!-- TAB NAV (junto al título) -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="insights">Insights</button>
+    </nav>
+
+    <div class="header-right">
+      <div class="header-controls">
+        <span class="season-tag">2026–27</span>
+        <label for="rosterInput" class="upload-btn secondary-upload">Insert Roster</label>
+        <input id="rosterInput" type="file" accept=".pdf,.csv,application/pdf,text/csv" hidden>
+        <label for="csvInput" class="upload-btn">Insert Coach's View</label>
+        <input id="csvInput" type="file" accept=".csv,.pdf,text/csv,application/pdf" hidden>
+      </div>
+      <div id="file-status" class="file-status">No file loaded</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- EMPTY -->
+    <div id="empty-state">
+      <div class="empty-card">
+        <div class="empty-icon">↑</div>
+        <h2>No hay datos cargados</h2>
+        <p>
+          Insert the Roster PDF or CSV to load the team roster and Coach's View
+          to load the statistics. You can upload them in any order.
+        </p>
+        <div class="upload-actions">
+          <label for="rosterInputEmpty" class="upload-btn secondary-upload">Insert Roster</label>
+          <input id="rosterInputEmpty" type="file" accept=".pdf,.csv,application/pdf,text/csv" hidden>
+          <label for="csvInputEmpty" class="upload-btn">Insert Coach's View</label>
+          <input id="csvInputEmpty" type="file" accept=".csv,.pdf,text/csv,application/pdf" hidden>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+
+      <!-- OVERVIEW -->
+      <section id="tab-overview" class="tab-panel active">
+
+        <div id="overview-kpis" class="kpi-strip"></div>
+
+        <div class="grid">
+          <div class="panel">
+            <h3>Team vs Opponents</h3>
+            <p class="sub">Team attacking production this season</p>
+            <div class="chart-wrap">
+              <canvas id="chartCompare"></canvas>
+            </div>
+            <p id="compare-note" class="tab-note" style="display:none"></p>
+          </div>
+
+          <div class="panel">
+            <h3>Top goal contributions</h3>
+            <p class="sub">Goals and assists produced this season</p>
+            <div class="chart-wrap">
+              <canvas id="chartScorers"></canvas>
+            </div>
+            <p id="scorers-toggle" class="tab-hint"></p>
+          </div>
+
+          <div class="panel" id="panel-shots-goals">
+            <h3>Shots vs goals</h3>
+            <p class="sub">Shooting volume compared with conversion</p>
+            <div class="chart-wrap">
+              <canvas id="chartShotsGoals"></canvas>
+            </div>
+            <p id="shots-goals-toggle" class="tab-hint"></p>
+          </div>
+
+          <div class="panel">
+            <h3>Scoring efficiency</h3>
+            <p class="sub">Goals/game vs assists/game</p>
+            <div class="chart-wrap tall">
+              <canvas id="chartEff"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- INSIGHTS -->
+      <section id="tab-insights" class="tab-panel">
+        <div class="panel" style="flex:1;min-height:0;">
+          <h3>Auto-generated insights</h3>
+          <p class="sub">Calculated automatically from this season's data</p>
+          <div id="insights-list" class="insight-card-list"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- SIDEBAR / ROSTER -->
+  <aside>
+    <div class="roster-head">
+      <div class="roster-title-row"><h3>Roster</h3><span class="roster-sort-label">PTS ↓ · GP ↓</span></div>
+      <input id="roster-search" class="roster-search" type="text" placeholder="Search player…">
+    </div>
+    <div id="roster-list" class="roster-list">
+      <div class="roster-empty">Insert Roster PDF or CSV to load the team roster.</div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="script.js?v=13"></script>
+</body>
+</html>
