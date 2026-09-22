@@ -1,9 +1,9 @@
 /* =========================================================
    SOCCER DASHBOARD
-   No hay datos de ejemplo: todo sale del CSV o del PDF que
-   suba la usuaria.
+   There is no sample data: everything comes from the CSV or
+   PDF the user uploads.
 
-   Estructura por pestañas:
+   Tab structure:
      OVERVIEW | INSIGHTS
 ========================================================= */
 
@@ -29,7 +29,6 @@ let teamName = "Team";
 
 let teamGoals = 0;
 let teamAssists = 0;
-let teamPoints = 0;
 let teamShots = 0;
 let teamSOG = 0;
 let matchesPlayed = 0;
@@ -42,12 +41,12 @@ let chartScorers = null;
 let chartEff = null;
 let chartCompare = null;
 let chartShotsGoals = null;
-let chartModal = null; // chart dentro del modal "ver todas las jugadoras"
+let chartModal = null; // chart inside the "see all players" modal
 
 
 /* =========================================================
    RESIZEOBSERVER POLYFILL
-   Algunos visores embebidos no lo traen, y Chart.js lo necesita.
+   Some embedded viewers don't include it, and Chart.js needs it.
 ========================================================= */
 
 if(typeof window.ResizeObserver === "undefined"){
@@ -72,17 +71,17 @@ try{
   Chart.defaults.font.family = "Inter, sans-serif";
   Chart.defaults.color = "#8b93a3";
 }catch(err){
-  console.error("Chart.js no está disponible:", err);
+  console.error("Chart.js is not available:", err);
 }
 
 function baseGrid(){
   return { color:"#262c39", drawTicks:false };
 }
 
-// Ajusta la altura real del contenedor de un chart de barras horizontales
-// según cuántas categorías tiene: así una jugadora sola no queda con un
-// montón de espacio vacío, y ocho jugadoras no quedan apretadas dentro
-// de una altura fija.
+// Adjusts the real height of a horizontal bar chart's container
+// based on how many categories it has: this way a single player
+// isn't left with a ton of empty space, and eight players aren't
+// squeezed into a fixed height.
 function setBarChartHeight(canvasId, count){
   const canvas = document.getElementById(canvasId);
   const wrap = canvas ? canvas.closest(".chart-wrap") : null;
@@ -122,20 +121,12 @@ function pct(value){
   return `${(value * 100).toFixed(1)}%`;
 }
 
-// Convierte "WW_Soccer_Print_Version_2026.pdf" -> "WW Soccer Print Version 2026"
-// para usarlo como título del dashboard.
-function titleFromFilename(filename){
-  const base = String(filename || "").replace(/\.[^./\\]+$/, ""); // quita extensión
-  const spaced = base.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-  return spaced || "Team Report";
-}
-
 function fmtRecord(r){
   if(!r) return "—";
   return r.t ? `${r.w}-${r.l}-${r.t}` : `${r.w}-${r.l}`;
 }
 
-// "319:12" (minutos:segundos, puede superar 60) -> 319.2 minutos decimales.
+// "319:12" (minutes:seconds, can exceed 60) -> 319.2 decimal minutes.
 function minutesToDecimal(value){
   const match = cleanText(value).match(/^(\d+):(\d{2})$/);
   if(!match) return 0;
@@ -143,7 +134,7 @@ function minutesToDecimal(value){
 }
 
 function fmtPct01(value){
-  // value ya viene como fracción (0.417) desde el PDF -> ".417"
+  // value already comes as a fraction (0.417) from the PDF -> ".417"
   if(!Number.isFinite(value)) return "—";
   return value.toFixed(3).replace(/^0/, "");
 }
@@ -157,8 +148,8 @@ function parseRecordPart(value){
 
 /* =========================================================
    PARSE PLAIN CSV
-   Columnas: # Name Yr Pos gp gs g/g a/g pts/g
-   (Este formato NO trae shots, SOG, récord ni portería.)
+   Columns: # Name Yr Pos gp gs g/g a/g pts/g
+   (This format does NOT include shots, SOG, record, or goalkeeping.)
 ========================================================= */
 
 function parseTeamCSV(text){
@@ -199,7 +190,7 @@ function parseTeamCSV(text){
         gp, gs: num(row["gs"]),
         gpg, apg, ptsPerGame,
         goals, assists, points,
-        // No disponibles en el CSV plano:
+        // Not available in the plain CSV:
         sh: undefined, sog: undefined
       };
     });
@@ -211,7 +202,7 @@ function parseTeamCSV(text){
 
 /* =========================================================
    PDF STAT SHEET PARSER
-   Formato PrestoSports/Sidearm "Print Version":
+   PrestoSports/Sidearm "Print Version" format:
 
    Record: 2-2   Home: 0-1   Away: 2-1   Neutral: 0-0   Conf: 0-1
 
@@ -239,8 +230,8 @@ async function loadPdfLines(arrayBuffer){
     const page = await pdf.getPage(pageNum);
     const content = await page.getTextContent();
 
-    // Agrupamos los "items" de texto por posición vertical (y) para
-    // reconstruir renglones, y dentro de cada uno ordenamos por x.
+    // We group the text "items" by vertical position (y) to
+    // reconstruct lines, then sort each one by x.
     const rows = new Map();
     content.items.forEach(item => {
       const y = Math.round(item.transform[5]);
@@ -299,8 +290,8 @@ function getTeamNameFromFile(filename){
   return base || "Team";
 }
 
-// Fila estándar de la tabla de ataque: id + nombre + 11 columnas
-// numéricas (GP GS G A PTS SH SH% SOG SOG% PK-ATT GW).
+// Standard offense table row: id + name + 11 numeric
+// columns (GP GS G A PTS SH SH% SOG SOG% PK-ATT GW).
 function parseOffenseTokens(tokens){
   const statTokens = tokens.slice(-11);
   const nameTokens = tokens.slice(1, tokens.length - 11);
@@ -315,8 +306,8 @@ function parseOffenseTokens(tokens){
   };
 }
 
-// Fila de totales (Total / Opponents): igual forma que la de ataque,
-// pero sin número de camiseta al inicio ("Total ... 11 columnas").
+// Totals row (Total / Opponents): same shape as the offense row,
+// but without a jersey number at the start ("Total ... 11 columns").
 function parseTotalsTokens(tokens, label){
   const statTokens = tokens.slice(-11);
   const [gp, gs, g, a, pts, sh, shPct, sog, sogPct, pkAtt, gw] = statTokens;
@@ -327,10 +318,10 @@ function parseTotalsTokens(tokens, label){
   };
 }
 
-// Fila de portería: nombre + MIN (mm:ss) + GA + GAA + SAVES + ... + SHO.
-// El orden exacto de columnas varía entre reportes, así que se
-// localiza el token de minutos y se interpreta lo que sigue por tipo
-// (entero vs decimal) en vez de por posición fija.
+// Goalkeeping row: name + MIN (mm:ss) + GA + GAA + SAVES + ... + SHO.
+// The exact column order varies between reports, so the minutes
+// token is located and what follows is interpreted by type
+// (integer vs decimal) instead of by fixed position.
 function parseGoalkeepingLine(line){
   const tokens = line.trim().split(/\s+/);
   const minIdx = tokens.findIndex(t => /^\d{1,3}:\d{2}$/.test(t));
@@ -401,7 +392,7 @@ function parsePDFStats(lines){
         return;
       }
 
-      // id + al menos 1 palabra de nombre + 11 columnas de stats
+      // id + at least 1 name word + 11 stat columns
       if(tokens.length < 13) return;
       if(!/^\d{1,2}$/.test(tokens[0])) return;
 
@@ -658,12 +649,11 @@ function computeFromRaw(raw, meta = {}){
   goalkeepers = meta.goalkeepers || [];
   opponent = meta.opponent || null;
 
-  // Orden: puntos, luego goles, luego alfabético.
+  // Order: points, then goals, then alphabetical.
   players.sort((a,b) => b.points - a.points || b.gp - a.gp || a.name.localeCompare(b.name));
 
   teamGoals = players.reduce((t,p) => t + p.goals, 0);
   teamAssists = players.reduce((t,p) => t + p.assists, 0);
-  teamPoints = players.reduce((t,p) => t + p.points, 0);
   teamShots = players.reduce((t,p) => t + (p.sh || 0), 0);
   teamSOG = players.reduce((t,p) => t + (p.sog || 0), 0);
 
@@ -687,8 +677,8 @@ function hasGoalkeepingData(){
 
 /* =========================================================
    FILE HANDLER
-   - .csv  -> parseTeamCSV()  (stats por jugadora, sin récord)
-   - .pdf  -> parsePDFStats() (reporte "Print Version")
+   - .csv  -> parseTeamCSV()  (per-player stats, no record)
+   - .pdf  -> parsePDFStats() ("Print Version" report)
 ========================================================= */
 
 function finishLoad(raw, meta, file, status, callbacks){
@@ -772,8 +762,6 @@ function handleStatsFile(file, callbacks = {}){
   reader.readAsText(file);
 }
 
-const handleCSVFile = handleStatsFile; // alias de compatibilidad
-
 
 /* =========================================================
    UPLOAD INPUTS
@@ -790,7 +778,7 @@ coachUploadInputs.forEach(input => {
     const file = event.target.files[0];
     if(file){
       document.getElementById("modal-error").textContent = "";
-      handleCSVFile(file);
+      handleStatsFile(file);
     }
     event.target.value = "";
   });
@@ -839,16 +827,14 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => switchTab(btn.dataset.tab));
 });
 
-window.switchTab = switchTab;
-
 
 /* =========================================================
-   REBUILD EVERYTHING (se ejecuta al cargar un archivo nuevo)
+   REBUILD EVERYTHING (runs when a new file is loaded)
 ========================================================= */
 
 function safeBuild(fn, label){
   try{ fn(); }
-  catch(err){ console.error(`Error dibujando ${label}:`, err); }
+  catch(err){ console.error(`Error drawing ${label}:`, err); }
 }
 
 function rebuildDashboard(){
@@ -858,7 +844,7 @@ function rebuildDashboard(){
 
 
 /* =========================================================
-   ROSTER (sidebar, compartido entre pestañas)
+   ROSTER (sidebar, shared between tabs)
 ========================================================= */
 
 function renderRoster(){
@@ -914,13 +900,13 @@ document.getElementById("roster-search").addEventListener("input", renderRoster)
 /* =========================================================
    PLAYER PROFILE MODAL
 
-   No todas las jugadoras tienen el mismo tipo de dato útil:
-   - Porteras (aparecen en la tabla de portería) -> minutos,
+   Not all players have the same kind of useful data:
+   - Goalkeepers (appear in the goalkeeping table) -> minutes,
      GAA, SV%, shutouts.
-   - Jugadoras de campo con tiros intentados -> G-A-PTS,
+   - Field players with attempted shots -> G-A-PTS,
      SH/SH%, SOG/SOG%, GW.
-   - Jugadoras de campo sin tiros -> solo apariciones/titularidad,
-     sin forzar columnas de tiro en 0.
+   - Field players with no shots -> only appearances/starts,
+     without forcing shot columns to 0.
 ========================================================= */
 
 function findGoalkeeperData(player){
@@ -962,11 +948,11 @@ function buildGoalkeeperProfile(player, gk){
   return `
     ${profileHeaderHTML(player, minutesPct >= 50 ? startsChip : "")}
 
-    <div class="profile-section-label">Reparto de minutos</div>
+    <div class="profile-section-label">Minutes played</div>
     <div class="profile-bar-row">
       <div class="profile-bar-labels">
-        <span>${gk.min} min jugados</span>
-        <span class="val">${minutesPct.toFixed(0)}% del equipo</span>
+        <span>${gk.min} min played</span>
+        <span class="val">${minutesPct.toFixed(0)}% of team</span>
       </div>
       <div class="profile-bar-track">
         <div class="profile-bar-fill" style="width:${Math.min(100, minutesPct)}%"></div>
@@ -1001,28 +987,28 @@ function buildFieldWithShotsProfile(player){
   const startedAll = player.gs !== undefined && player.gp > 0 && player.gs === player.gp;
 
   return `
-    ${profileHeaderHTML(player, startedAll ? `<span class="profile-chip accent">Titular fija</span>` : "")}
+    ${profileHeaderHTML(player, startedAll ? `<span class="profile-chip accent">Regular starter</span>` : "")}
 
     <div class="profile-section-label">Production</div>
     <div class="profile-stats">
       <div class="profile-stat highlight">
-        <div class="label">Goles</div>
+        <div class="label">Goals</div>
         <div class="value">${player.goals}</div>
       </div>
       <div class="profile-stat">
-        <div class="label">Asistencias</div>
+        <div class="label">Assists</div>
         <div class="value">${player.assists}</div>
       </div>
       <div class="profile-stat">
-        <div class="label">Puntos</div>
+        <div class="label">Points</div>
         <div class="value">${player.points}</div>
       </div>
     </div>
 
-    <div class="profile-section-label">Volumen vs eficiencia de tiro</div>
+    <div class="profile-section-label">Shot volume vs. efficiency</div>
     <div class="profile-bar-row">
       <div class="profile-bar-labels">
-        <span>Tiros (SH)</span>
+        <span>Shots (SH)</span>
         <span class="val">${player.sh} · ${player.shPct !== undefined ? fmtPct01(player.shPct) : "—"} conversion</span>
       </div>
       <div class="profile-bar-track">
@@ -1032,7 +1018,7 @@ function buildFieldWithShotsProfile(player){
     ${player.sog !== undefined ? `
     <div class="profile-bar-row">
       <div class="profile-bar-labels">
-        <span>Tiros al arco (SOG)</span>
+        <span>Shots on goal (SOG)</span>
         <span class="val">${player.sog} · ${player.sogPct !== undefined ? fmtPct01(player.sogPct) : "—"} of total</span>
       </div>
       <div class="profile-bar-track">
@@ -1040,14 +1026,14 @@ function buildFieldWithShotsProfile(player){
       </div>
     </div>` : ""}
 
-    ${player.gw > 0 ? `<div class="profile-gw-badge">⚽ ${player.gw} gol${player.gw > 1 ? "es" : ""} decisivo${player.gw > 1 ? "s" : ""} (GW)</div>` : ""}
+    ${player.gw > 0 ? `<div class="profile-gw-badge">⚽ ${player.gw} game-winning goal${player.gw > 1 ? "s" : ""} (GW)</div>` : ""}
   `;
 }
 
 function buildFieldNoShotsProfile(player){
   const started = player.gs !== undefined ? player.gs : 0;
   const startedNote = started > 0
-    ? `Titular en ${started} de ${player.gp} partido${player.gp === 1 ? "" : "s"}.`
+    ? `Started ${started} of ${player.gp} game${player.gp === 1 ? "" : "s"}.`
     : `No starts this season — appeared in ${player.gp} of the team’s games.`;
 
   return `
@@ -1090,7 +1076,7 @@ document.addEventListener("keydown", e => {
 
 /* =========================================================
    OVERVIEW TAB
-   KPIs de equipo + comparación vs rivales + highlights rápidos
+   Team KPIs + comparison vs opponents + quick highlights
 ========================================================= */
 
 function renderOverviewTab(){
@@ -1101,9 +1087,9 @@ function renderOverviewTab(){
   safeBuild(buildEff, "chartEff");
 
   const shotsPanel = document.getElementById("panel-shots-goals");
-  // OJO: "" (no "block") para no pisar el display:flex del .panel —
-  // con "block" el panel perdía su layout flex interno y eso rompía
-  // el alto de toda la fila del grid, forzando scroll en la página.
+  // NOTE: "" (not "block") so we don't override the .panel's display:flex —
+  // with "block" the panel lost its internal flex layout and that broke
+  // the height of the whole grid row, forcing a scroll on the page.
   shotsPanel.style.display = hasShotsData() ? "" : "none";
 }
 
@@ -1147,7 +1133,7 @@ function buildCompareChart(){
   if(!hasOpponentData()){
     canvas.style.display = "none";
     note.style.display = "block";
-    note.textContent = "Sube el PDF \"Print Version\" del reporte para ver la comparación contra rivales.";
+    note.textContent = "Upload the report's \"Print Version\" PDF to see the comparison against opponents.";
     return;
   }
 
@@ -1263,9 +1249,9 @@ function buildShotsGoals(){
   const hint = document.getElementById("shots-goals-toggle");
   if(!hasShotsData()){ hint.textContent = ""; hint.className = "tab-hint"; return; }
 
-  // Barras horizontales (como "Top goal contributions") en vez de barras
-  // verticales con nombres rotados: con muchas jugadoras los labels se
-  // cortaban y las barras quedaban minúsculas.
+  // Horizontal bars (like "Top goal contributions") instead of vertical
+  // bars with rotated names: with many players the labels got
+  // cut off and the bars became tiny.
   const all = [...players].filter(p => p.sh > 0).sort((a,b) => b.sh - a.sh);
   if(!all.length){ hint.textContent = ""; hint.className = "tab-hint"; return; }
 
@@ -1315,9 +1301,9 @@ function buildShotsGoals(){
 /* =========================================================
    EXPANDED CHART MODAL
 
-   Se abre al hacer click en "Top goal contributions" o
-   "Shots vs goals" cuando hay más de 5 jugadoras con datos:
-   muestra el chart completo con todas ellas.
+   Opens when clicking "Top goal contributions" or
+   "Shots vs goals" when there are more than 5 players with data:
+   shows the full chart with all of them.
 ========================================================= */
 
 const CHART_MODAL_CONFIG = {
@@ -1360,8 +1346,8 @@ function openChartModal(kind){
 
   const wrap = document.getElementById("chart-modal-wrap");
 
-  // Shots vs goals: todo entra en pantalla sin scroll.
-  // Los otros charts mantienen un tamaño normal.
+  // Shots vs goals: everything fits on screen without scrolling.
+  // The other charts keep a normal size.
   if(kind === "shotsGoals"){
     wrap.style.height = "68vh";
   } else {
@@ -1396,7 +1382,7 @@ function openChartModal(kind){
           }
         },
 
-        // Más compactas para que entren todas
+        // More compact so they all fit
         barPercentage: kind === "shotsGoals" ? 0.48 : 0.7,
         categoryPercentage: kind === "shotsGoals" ? 0.62 : 0.8,
         maxBarThickness: kind === "shotsGoals" ? 22 : 34,
@@ -1473,9 +1459,9 @@ function buildEff(){
   if(chartEff !== null){ chartEff.destroy(); chartEff = null; }
   if(!players.length) return;
 
-  // Solo mostramos jugadoras que realmente aportan información ofensiva:
-  // al menos 1 gol o 1 asistencia. Máximo 7 para que la gráfica sea legible.
-  // Se priorizan por puntos y, en empate, por partidos jugados.
+  // We only show players who genuinely contribute offensive information:
+  // at least 1 goal or 1 assist. Max 7 so the chart stays legible.
+  // Prioritized by points and, in a tie, by games played.
   const efficiencyPlayers = players
     .filter(p => p.gp > 0 && (p.goals > 0 || p.assists > 0))
     .sort((a,b) => (b.points - a.points) || (b.gp - a.gp) || a.name.localeCompare(b.name))
@@ -1536,7 +1522,7 @@ function buildEff(){
 
 /* =========================================================
    INSIGHTS TAB
-   Frases generadas automáticamente a partir de los datos.
+   Phrases generated automatically from the data.
 ========================================================= */
 
 function buildInsights(){
@@ -1618,7 +1604,7 @@ function renderInsightsTab(){
 
 
 /* =========================================================
-   INITIAL STATE — no hay datos predeterminados.
+   INITIAL STATE — no default data.
 ========================================================= */
 
 renderRoster();
