@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
   <script src="vendor/chart.umd.js"></script>
   <!-- PAPAPARSE -->
   <script src="vendor/papaparse.min.js"></script>
-  <!-- PDF.JS (lee el reporte "Print Version" en PDF) -->
+  <!-- PDF.JS (reads the "Print Version" report in PDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <link rel="stylesheet" href="styles.css?v=13">
@@ -39,10 +39,10 @@
   </div>
 </div>
 
-<!-- EXPANDED CHART MODAL (se abre al hacer click en un chart con top 5) -->
+<!-- EXPANDED CHART MODAL (opens when clicking a chart with top 5) -->
 <div id="chart-modal" class="modal-overlay hidden">
   <div class="modal-card modal-card-chart">
-    <button id="chart-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+    <button id="chart-modal-close" class="modal-close" aria-label="Close">&times;</button>
     <h2 id="chart-modal-title">—</h2>
     <p id="chart-modal-sub" class="sub"></p>
     <div id="chart-modal-body" class="modal-chart-body">
@@ -53,10 +53,10 @@
   </div>
 </div>
 
-<!-- PLAYER PROFILE MODAL (se abre al hacer click en una jugadora del roster) -->
+<!-- PLAYER PROFILE MODAL (opens when clicking a player in the roster) -->
 <div id="player-modal" class="modal-overlay hidden">
   <div class="modal-card modal-card-player">
-    <button id="player-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+    <button id="player-modal-close" class="modal-close" aria-label="Close">&times;</button>
     <div id="player-modal-body"></div>
   </div>
 </div>
@@ -70,7 +70,7 @@
       <p>Season analytics</p>
     </div>
 
-    <!-- TAB NAV (junto al título) -->
+    <!-- TAB NAV (next to the title) -->
     <nav class="tabs">
       <button class="tab-btn active" data-tab="overview">Overview</button>
       <button class="tab-btn" data-tab="insights">Insights</button>
@@ -95,7 +95,7 @@
     <div id="empty-state">
       <div class="empty-card">
         <div class="empty-icon">↑</div>
-        <h2>No hay datos cargados</h2>
+        <h2>No data loaded</h2>
         <p>
           Insert the Roster PDF or CSV to load the team roster and Coach's View
           to load the statistics. You can upload them in any order.
