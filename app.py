@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Servidor local simple para el dashboard de estadísticas de soccer.
+Simple local server for the soccer stats dashboard.
 
-Uso:
-    python3 app.py [puerto]
+Usage:
+    python3 app.py [port]
 
-Por defecto sirve en http://localhost:8000 los archivos que estén
-en la misma carpeta (index.html, styles.css, script.js).
+By default serves the files in the same folder
+(index.html, styles.css, script.js) at http://localhost:8000.
 """
 
 import http.server
@@ -21,8 +21,8 @@ DEFAULT_PORT = 8000
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PORT
 
-    # Sirve archivos desde la carpeta donde vive este script,
-    # sin importar desde dónde se ejecute el comando.
+    # Serve files from the folder where this script lives,
+    # regardless of where the command is run from.
     root = Path(__file__).resolve().parent
 
     handler = http.server.SimpleHTTPRequestHandler
@@ -34,8 +34,8 @@ def main():
 
     with socketserver.TCPServer(("", port), Handler) as httpd:
         url = f"http://localhost:{port}/index.html"
-        print(f"Sirviendo el dashboard en {url}")
-        print("Presiona Ctrl+C para detener el servidor.")
+        print(f"Serving the dashboard at {url}")
+        print("Press Ctrl+C to stop the server.")
         try:
             webbrowser.open(url)
         except Exception:
@@ -43,7 +43,7 @@ def main():
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
-            print("\nServidor detenido.")
+            print("\nServer stopped.")
 
 
 if __name__ == "__main__":
