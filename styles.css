@@ -1325,7 +1325,7 @@
 
 
 /* =========================================================
-   CHART TOGGLE HINT (top 5 / ver todas)
+   CHART TOGGLE HINT (top 5 / see all)
 ========================================================= */
 
 .tab-hint{
@@ -1523,14 +1523,14 @@
 /* =========================================================
    DESKTOP LAYOUT
 
-   La página scrollea normalmente (nada se comprime a la fuerza
-   en 100vh). El roster queda fijo (sticky) al costado con su
-   propio scroll interno, mientras el contenido principal
-   scrollea con el resto de la página.
+   The page scrolls normally (nothing is forced to compress
+   into 100vh). The roster stays fixed (sticky) to the side
+   with its own internal scroll, while the main content
+   scrolls with the rest of the page.
 ========================================================= */
 /* =========================================================
    COMPACT DESKTOP FIT
-   Mantiene el dashboard completo dentro de una sola pantalla.
+   Keeps the whole dashboard within a single screen.
 ========================================================= */
 @media (min-width: 901px){
   html,
@@ -1700,7 +1700,7 @@
   }
 }
 
-/* En portátiles con poca altura, compacta un poco más. */
+/* On laptops with limited height, compact things a bit more. */
 @media (min-width: 901px) and (max-height: 800px){
   header{
     padding:7px 20px;
